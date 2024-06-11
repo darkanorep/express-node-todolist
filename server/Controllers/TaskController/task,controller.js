@@ -4,8 +4,11 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 const getTask = async (req, res) => {
-        const tasks = await prisma.task.findMany();
-
+        const tasks = await prisma.task.findMany({
+            where: {
+                userId: req.user.id
+            }
+        });
         try {
 
             if (tasks.length === 0) {
@@ -27,6 +30,7 @@ const createTask = async (req, res) => {
 
         const task = await prisma.task.create({
             data: {
+                'userId': req.user.id,
                 'title': title,
             }
         });
@@ -58,13 +62,13 @@ const getSpecificTask = async (req, res) => {
     }
 }
 const updateTask = async (req, res) => {
-    req.params.id = parseInt(req.params.id);
+    const { id } = req.user.id;
     const { title } = req.body;
 
     try {
         const task = await prisma.task.findFirst({
             where: {
-                id: req.params.id
+                userId: id,
             }
         });
 
@@ -75,7 +79,7 @@ const updateTask = async (req, res) => {
         } else {
             const updatedTask = await prisma.task.update({
                 where: {
-                    id: req.params.id
+                    id: task.id
                 },
                 data: {
                     title: title
@@ -122,7 +126,7 @@ const deleteTask = async (req, res) => {
 }
 async function validateTask(req, res, next) {
     const { title } = req.body;
-    const { id } = req.params; // get the id from the request parameters
+    const { id } = req.user.id;
 
     if (!title) {
         return res.status(400).json({
@@ -133,7 +137,7 @@ async function validateTask(req, res, next) {
     const existingTask = await prisma.task.findFirst({
         where: {
             title,
-            id: {
+            userId: {
                 not: parseInt(id) || undefined
             }
         }
