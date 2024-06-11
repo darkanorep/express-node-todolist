@@ -62,13 +62,14 @@ const getSpecificTask = async (req, res) => {
     }
 }
 const updateTask = async (req, res) => {
-    const { id } = req.user.id;
+    const { id } = req.params;
     const { title } = req.body;
 
     try {
         const task = await prisma.task.findFirst({
             where: {
-                userId: id,
+                id: parseInt(id),
+                userId: req.user.id
             }
         });
 
@@ -88,6 +89,7 @@ const updateTask = async (req, res) => {
 
             res.json(updatedTask);
         }
+
     } catch (error) {
         res.status(500).json({ error: 'Something went wrong' });
     }
@@ -99,6 +101,7 @@ const deleteTask = async (req, res) => {
 
         const task = await prisma.task.findFirst({
             where: {
+                userId: req.user.id,
                 id: id
             }
         });
@@ -126,7 +129,7 @@ const deleteTask = async (req, res) => {
 }
 async function validateTask(req, res, next) {
     const { title } = req.body;
-    const { id } = req.user.id;
+    const { id } = req.params;
 
     if (!title) {
         return res.status(400).json({
@@ -137,9 +140,10 @@ async function validateTask(req, res, next) {
     const existingTask = await prisma.task.findFirst({
         where: {
             title,
-            userId: {
+            userId: req.user.id,
+            id : {
                 not: parseInt(id) || undefined
-            }
+            },
         }
     });
 
