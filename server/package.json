@@ -11,7 +11,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@forkjs/group-router": "^1.0.5",
+    "@forkjs/group-router": "^1.0.2",
     "@prisma/client": "^5.15.0",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
